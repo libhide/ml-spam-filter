@@ -1,5 +1,6 @@
 import os
 from collections import Counter
+from tqdm import tqdm
 import numpy as np
 
 
@@ -26,17 +27,11 @@ def make_dictionary(train_dir):
 def extract_features(train_dir, dictionary):
     files = [os.path.join(train_dir,fi) for fi in os.listdir(train_dir)]
     features_matrix = np.zeros((len(files), 3000))
-    doc_id = 0;
-    for fil in files:
+    for doc_id, fil in enumerate(tqdm(files)):
       with open(fil) as fi:
         for i, line in enumerate(fi):
           if i == 2:
             words = line.split()
-            for word in words:
-              word_id = 0
-              for i, d in enumerate(dictionary):
-                if d[0] == word:
-                  word_id = i
+            for word_id, (word, _) in enumerate(dictionary):
                   features_matrix[doc_id, word_id] = words.count(word)
-        doc_id += 1
     return features_matrix
