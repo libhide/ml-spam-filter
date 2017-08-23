@@ -32,6 +32,9 @@ def extract_features(train_dir, dictionary):
         for i, line in enumerate(fi):
           if i == 2:
             words = line.split()
+            w_c = Counter(words)
             for word_id, (word, _) in enumerate(dictionary):
-                  features_matrix[doc_id, word_id] = words.count(word)
+                g = w_c.get(word)
+                if g is not None:
+                    features_matrix[doc_id, word_id] = g
     return features_matrix
