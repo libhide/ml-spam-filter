@@ -1,40 +1,12 @@
 import os
-from collections import Counter
-from tqdm import tqdm
-import numpy as np
 
 
-def make_dictionary(train_dir):
-    emails = [os.path.join(train_dir,f) for f in os.listdir(train_dir)]
-    all_words = []
-    for mail in emails:
-        with open(mail) as m:
-            for i, line in enumerate(m):
+def get_email_list(dir):
+    filenames = [os.path.join(dir, f) for f in os.listdir(dir)]
+    email_text_list = []
+    for fil in filenames:
+        with open(fil) as f:
+            for i, line in enumerate(f):
                 if i == 2:
-                    words = line.split()
-                    all_words += words
-    dictionary = Counter(all_words)
-    list_to_remove = list(dictionary)
-    for item in list_to_remove:
-        if item.isalpha() == False:
-            del dictionary[item]
-        elif len(item) == 1:
-            del dictionary[item]
-    dictionary = dictionary.most_common(3000)
-    return dictionary
-
-
-def extract_features(train_dir, dictionary):
-    files = [os.path.join(train_dir,fi) for fi in os.listdir(train_dir)]
-    features_matrix = np.zeros((len(files), 3000))
-    for doc_id, fil in enumerate(tqdm(files)):
-      with open(fil) as fi:
-        for i, line in enumerate(fi):
-          if i == 2:
-            words = line.split()
-            w_c = Counter(words)
-            for word_id, (word, _) in enumerate(dictionary):
-                g = w_c.get(word)
-                if g is not None:
-                    features_matrix[doc_id, word_id] = g
-    return features_matrix
+                    email_text_list.append(line)
+    return email_text_list

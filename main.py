@@ -1,28 +1,60 @@
 import numpy as np
-from collections import Counter
-from sklearn.naive_bayes import GaussianNB
-from sklearn.metrics import confusion_matrix
+from time import time
 
 from helpers import *
 
+from sklearn.naive_bayes import GaussianNB
+from sklearn.feature_extraction.text import CountVectorizer
 
-# Create a dictionary of words with its frequency
+
+# setup
 training_dir = './data/train-mails'
-dictionary = make_dictionary(training_dir)
+testing_dir = './data/test-mails'
 
-# Prepare feature vectors per training mails and its labels
-train_labels = np.zeros(702)
-train_labels[351:701] = 1
-train_matrix = extract_features(training_dir, dictionary)
+training_emails = get_email_list(training_dir)
+test_emails = get_email_list(testing_dir)
 
-# Training the Naive bayes classifier
-model1 = GaussianNB()
-model1.fit(train_matrix, train_labels)
+vectorizer = CountVectorizer()
+vocab = vectorizer.fit(training_emails)
 
-# Test the unseen mails for Spam
-test_dir = './data/test-mails'
-test_matrix = extract_features(test_dir, dictionary)
-test_labels = np.zeros(260)
-test_labels[130:260] = 1
-result1 = model1.predict(test_matrix)
-print(confusion_matrix(test_labels, result1))
+labels_train = np.zeros(702)
+labels_train[351:701] = 1
+features_train = vocab.transform(training_emails).toarray()
+
+labels_test = np.zeros(260)
+labels_test[130:260] = 1
+features_test = vocab.transform(test_emails).toarray()
+
+
+# ml
+clf = GaussianNB()
+
+t0 = time()
+clf.fit(features_train, labels_train)
+print("\nTraining time: {}s".format(round(time()-t0, 3)))
+
+t1 = time()
+pred = clf.predict(features_test)
+print("Predicting time: {}s".format(round(time()-t1, 3)))
+
+
+# analysis
+from sklearn.metrics import accuracy_score
+accuracy = accuracy_score(pred, labels_test)
+print("\nAccuracy: {}".format(accuracy))
+
+from sklearn.metrics import precision_score
+precision_score = precision_score(labels_test, pred)
+print("Precision: {}".format(precision_score))
+
+from sklearn.metrics import recall_score
+recall_score = recall_score(labels_test, pred)
+print("Recall score: {}".format(recall_score))
+
+from sklearn.metrics import f1_score
+f1_score = f1_score(labels_test, pred)
+print("F1 score: {}".format(f1_score))
+
+from sklearn.metrics import confusion_matrix
+confusion_matrix = confusion_matrix(labels_test, pred)
+print("\nConfusion matrix -->\n{}\n".format(confusion_matrix))
